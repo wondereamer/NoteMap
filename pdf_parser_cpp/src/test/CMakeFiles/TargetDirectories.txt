@@ -1,0 +1,1 @@
+/home/wondereamer/Dropbox/Workspace/qt/mindnet/PdfViewer/cpp/src/test/CMakeFiles/_example.dir
