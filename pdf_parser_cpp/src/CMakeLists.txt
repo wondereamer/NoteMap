@@ -51,3 +51,12 @@ SWIG_LINK_LIBRARIES(pdfviewer
     /home/wondereamer/local/lib/libjpeg.so
     /home/wondereamer/local/lib/libfontconfig.so.1
     /home/wondereamer/local/lib/libfreetype.so.6)
+#INSTALL (FILES 
+    #fishgram.py
+    #adaptors.py
+    #logic.py
+    #pygephi.py
+    #pyshell.py
+    #tree.py
+    #util.py
+    #DESTINATION "${DATADIR}/python/")

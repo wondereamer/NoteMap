@@ -17,7 +17,6 @@
  */
 
 #include "pdf_document.h"
-#include "using.h"
 #include <string>
 #include <QtGui/QApplication>
 #include <QDebug>
@@ -25,66 +24,36 @@
 #include <QDir>
 #include <QString>
 using std::string;
+typedef std::pair<std::string, std::string> Annot;
+typedef std::set<Annot> AnnotSet;
 
+using namespace std;
 QString FILENAME_PNG = "temp_%1.png";  //relate to cpp server
 QString CPP_RELATIVE_TO_HTML = "./bin/";
 QString TEMP_PDF_PNG_PATH = CPP_RELATIVE_TO_HTML + FILENAME_PNG;// relate to html document
-//using namespace IdeaNet;
-using namespace std;
-char* argv2[1]={ "name" };
-int argc = 1;
-//QApplication app(argc, argv2);
 Pdf_Document document;
-typedef std::pair<std::string, std::string> Annot;
-typedef std::set<Annot> AnnotSet;
-string open_file(const string &fname)
+
+bool
+open_file(const string &fname)
 {
-    if (fname.size() > 0 && document.load_document(QString(fname.c_str()))) {
-        QString xml;
-        xml += "<root>";
-        xml += "<path>";
-        xml += TEMP_PDF_PNG_PATH.arg(0);
-        xml += "</path>";
-        xml += "</root>";
-        return xml.toStdString();
-    }
+    return document.load_document(fname);
 }
-std::string get_spec_annots(const AnnotSet &unique_annots)
+
+std::vector<AnnotStruct>
+get_spec_annots(const AnnotSet &unique_annots)
 {
-    std::set<Pdf_Document::Annot> annots = document.get_annots_type();
-    QString ret = document.get_spec_annots(annots);
- return ret.toStdString();
+    std::set<Annot> annots = document.get_annots_type();
+    return document.get_spec_annots(annots);
 }
-string annotations( )
+
+std::set<Annot>
+get_annot_types()
 {
-    std::set<Pdf_Document::Annot> annots = document.get_annots_type();
-    QString temp;
-    QString xml;
-    xml += "<root>" ;
-    foreach(Pdf_Document::Annot annot, annots){
-        QColor color(annot.second);
-        xml += "<unique_annot>"; 
-        xml += "<type>";
-        xml += annot.first;
-        xml += "</type>";
-        xml += "<color>";
-        xml += annot.second;
-        xml += "</color>";
-        xml += "<r>";
-        xml += QString::number(color.red());
-        xml += "</r>";
-        xml += "<g>";
-        xml += QString::number(color.green());
-        xml += "</g>";
-        xml += "<b>";
-        xml += QString::number(color.blue());
-        xml += "</b>";
-        xml += "</unique_annot>";
-    }
-    xml += "</root>";
-    return xml.toStdString();
+    return document.get_annots_type();
 }
-string previous_page()
+
+string 
+previous_page()
 {
 
     int all = document.num_pages();
@@ -101,7 +70,8 @@ string previous_page()
     xml += "</root>";
     return xml.toStdString();
 }
-string next_page()
+string 
+next_page()
 {
 
     int all = document.num_pages();
@@ -120,7 +90,8 @@ string next_page()
     return xml.toStdString();
 
 }
-string get_page(const string &index)
+string 
+get_page(const string &index)
 {
 
     QString page(index.c_str());

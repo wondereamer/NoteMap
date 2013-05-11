@@ -7,9 +7,10 @@
 #include <QtGui/QLineEdit>
 #include <QtGui>
 #include <QDebug>
-#include "using.h"
 #include <QLinkedList>
 #include <QPointF>
+#include <QString>
+#include <algorithm>
 #include <cassert>
 #include <set>
 const int AText = 1;
@@ -28,7 +29,7 @@ Pdf_Document::Pdf_Document()
 void Pdf_Document::init_type_map()
 {
 
-    std::pair<QString, Poppler::Annotation::SubType> v;
+    std::pair<std::string, Poppler::Annotation::SubType> v;
     v.first = "AText";
     v.second = Poppler::Annotation::AText;
     _type_map.insert(v);
@@ -46,7 +47,7 @@ void Pdf_Document::init_type_map()
     v.first = "Squiggly";
     v.second = Poppler::Annotation::AHighlight;
     _type_map.insert(v);
-    //
+    // end of Highlight
 
     v.first = "AFileAttachment";
     v.second = Poppler::Annotation::AFileAttachment;
@@ -76,19 +77,19 @@ void Pdf_Document::init_type_map()
     v.second = Poppler::Annotation::AGeom;
     _type_map.insert(v);
 
-    
-    std::pair<QString, Poppler::HighlightAnnotation::HighlightType> vv;
+
+    std::pair<std::string, Poppler::HighlightAnnotation::HighlightType> vv;
     vv.first = "Highlight";
     vv.second = Poppler::HighlightAnnotation::Highlight;
-    _hl_sub_type_map.insert(vv);
+    _hl_subtype_map.insert(vv);
 
     vv.first = "Squiggly";
     vv.second = Poppler::HighlightAnnotation::Squiggly;
-    _hl_sub_type_map.insert(vv);
+    _hl_subtype_map.insert(vv);
 
     vv.first = "Underline";
     vv.second = Poppler::HighlightAnnotation::Underline;
-    _hl_sub_type_map.insert(vv);
+    _hl_subtype_map.insert(vv);
 }
 QImage Pdf_Document::get_page(int page)
 {
@@ -106,30 +107,30 @@ QImage Pdf_Document::reload_page()
     return get_page(_curPage);
 }
 
-bool Pdf_Document::load_document(const QString &file)
+bool Pdf_Document::load_document(const std::string &file)
 {
     _unique_annots.clear();
     _curPage = 0;
     if (_doc) {
-	delete _doc;
+        delete _doc;
     }
-    _doc = Poppler::Document::load(file);
+    _doc = Poppler::Document::load(QString(file.c_str()));
     if (!_doc) {
         qDebug()<<"Failed to open file!";
-	return false;
+        return false;
     }
 
-//    while (_doc->isLocked()) {
-//	bool ok = true;
-//	QString password = QInputDialog::getText(0, "Document Password",
-//		"Please insert the password of the document:",
-//		QLineEdit::Password, QString(), &ok);
-//	if (!ok) {
-//	    delete _doc;
-//	    return false;
-//	}
-//	_doc->unlock(password.toLatin1(), password.toLatin1());
-//    }
+    //    while (_doc->isLocked()) {
+    //	bool ok = true;
+    //	std::string password = QInputDialog::getText(0, "Document Password",
+    //		"Please insert the password of the document:",
+    //		QLineEdit::Password, std::string(), &ok);
+    //	if (!ok) {
+    //	    delete _doc;
+    //	    return false;
+    //	}
+    //	_doc->unlock(password.toLatin1(), password.toLatin1());
+    //    }
 
     _doc->setRenderHint(Poppler::Document::TextAntialiasing, true);
     _doc->setRenderHint(Poppler::Document::Antialiasing, true);
@@ -144,178 +145,187 @@ std::set<Pdf_Document::Annot> Pdf_Document::get_annots_type( )
 {
     assert(_doc);
     int num = _doc->numPages();
-    int max_sample = MAX_SAMPLE;
+    //    int max_sample = MAX_SAMPLE;
     bool per_page_flag = false;
-    std::multiset<qreal> height_set;
+    //    std::multiset<qreal> height_set;
     _unique_annots.clear();
     for (int index = 0; index < num; index++) {
-	Poppler::Page *popplerPage = _doc->page(index);
-	per_page_flag = true;                   // make sure to sample an annotation per page 
-	QList< Poppler::Annotation* > annots = popplerPage->annotations();
-	_page_size = popplerPage->pageSize();
-	foreach(Poppler::Annotation *annot, annots){
-	    Pdf_Document::Annot unique_annot;
-	    switch(annot->subType()) {
-		case Poppler::Annotation::AText:
-//			_unique_annots.insert(unique_annot);
-	    		break;
-		case Poppler::Annotation::ALine:
-//			_unique_annots.insert(unique_annot);
-			break;
-		case Poppler::Annotation::AHighlight:{
-		    Poppler::HighlightAnnotation *hlannt = dynamic_cast<Poppler::HighlightAnnotation*>(annot);
-		    // calcuate _text_height
-		    if( per_page_flag && max_sample-- > 0 ){
-			QList<Poppler::HighlightAnnotation::Quad> quads = hlannt->highlightQuads();
-			Poppler::HighlightAnnotation::Quad quad = quads[0];
-			qreal height = quad.points[3].y() - quad.points[0].y();
-			height_set.insert(height);
-		    }
-		    QColor anncol = hlannt->style.color;
-		    QString color = anncol.name();
-		    unique_annot.second = color;
-		    switch(hlannt->highlightType()) {
-			case Poppler::HighlightAnnotation::Highlight:
-			    unique_annot.first = "Highlight";
-			    break;
-			case Poppler::HighlightAnnotation::Squiggly:
-			    unique_annot.first = "Squiggly";
-			    break;
-			case Poppler::HighlightAnnotation::Underline:
-			    unique_annot.first = "Underline";
-			    break;
-			default:
-			    unique_annot.first = "Unknown" ;
-			}
-		
-		    _unique_annots.insert(unique_annot);
-		}//end of AHighlight
-		break;
-	    	default:
-	    		;
+        Poppler::Page *popplerPage = _doc->page(index);
+        per_page_flag = true;                   // make sure to sample an annotation per page 
+        QList< Poppler::Annotation* > annots = popplerPage->annotations();
+        _page_size = popplerPage->pageSize();
+        foreach(Poppler::Annotation *annot, annots){
+            Pdf_Document::Annot unique_annot;
+            switch(annot->subType()) {
+                case Poppler::Annotation::AText:
+                    //			_unique_annots.insert(unique_annot);
+                    break;
+                case Poppler::Annotation::ALine:
+                    //			_unique_annots.insert(unique_annot);
+                    break;
+                case Poppler::Annotation::AHighlight:{
+                     Poppler::HighlightAnnotation *hlannt = dynamic_cast<Poppler::HighlightAnnotation*>(annot);
+                     //		    // calcuate _text_height
+                     //		    if( per_page_flag && max_sample-- > 0 ){
+                     //			QList<Poppler::HighlightAnnotation::Quad> quads = hlannt->highlightQuads();
+                     //			Poppler::HighlightAnnotation::Quad quad = quads[0];
+                     //			qreal height = quad.points[3].y() - quad.points[0].y();
+                     //			height_set.insert(height);
+                     //		    }
+                     QColor anncol = hlannt->style.color;
+                     std::string color = anncol.name().toStdString();
+                     unique_annot.second = color;
+                     switch(hlannt->highlightType()) {
+                         case Poppler::HighlightAnnotation::Highlight:
+                             unique_annot.first = "Highlight";
+                             break;
+                         case Poppler::HighlightAnnotation::Squiggly:
+                             unique_annot.first = "Squiggly";
+                             break;
+                         case Poppler::HighlightAnnotation::Underline:
+                             unique_annot.first = "Underline";
+                             break;
+                         default:
+                             unique_annot.first = "Unknown" ;
+                     }
 
-	    }//end of subType() switch
-	    per_page_flag = false;
-	}// end of annots iterate loop
+                     _unique_annots.insert(unique_annot);
+                     break; }//end of AHighlight
+                default:
+                                                     ;
+            }//end of subType() switch
+            per_page_flag = false;
+        }// end of annots iterate loop
 
-	delete popplerPage;
+        delete popplerPage;
     }// end of page interate loop
-    if (height_set.size() > 0) {
-	std::multiset<qreal>::iterator i = height_set.begin();
-	for (int j = 0; j < height_set.size()/2; j++) {
-		i++;
-	}
-	_text_height = *i;
-	
-    }
+    //    if (height_set.size() > 0) {
+    //	std::multiset<qreal>::iterator i = height_set.begin();
+    //	for (int j = 0; j < height_set.size()/2; j++) {
+    //		i++;
+    //	}
+    //	_text_height = *i;
+
+    //    }
     return _unique_annots;
 }
 
-QString Pdf_Document::get_spec_annots(const std::set<Annot> &unique_annots)
+std::vector<AnnotStruct> Pdf_Document::get_spec_annots(const std::set<Annot> &unique_annots)
 {
     assert(_doc);
-    QString result;
+    std::string result;
     int num = _doc->numPages();
+    std::vector<AnnotStruct> annotStructS;
+    // iterate all pages
     for (int index = 0; index < num; index++) {
-	Poppler::Page *popplerPage = _doc->page(index);
-	_page_size = popplerPage->pageSize();
-	QList< Poppler::Annotation* > annots = popplerPage->annotations();
-	QString content;
-	// iterate all annotations in one page
-	foreach(Poppler::Annotation *annot, annots){
-	    QString annot_type;
-	    QString annot_color;
-	    std::set<Annot>::const_iterator iterator = unique_annots.begin();
-	    QString color = annot->style.color.name();
-	    for (; iterator != unique_annots.end(); iterator++) {
-		if(annot->subType() == _type_map[iterator->first]
-				    && color == iterator->second){
-		    annot_type = iterator->first;
-		    annot_color = iterator->second;
-		    break;
-		}
+        Poppler::Page *popplerPage = _doc->page(index);
+        _page_size = popplerPage->pageSize();
+        QList< Poppler::Annotation* > annots = popplerPage->annotations();
+        std::string content;
+        // iterate all annotations in one page
+        foreach(Poppler::Annotation *annot, annots){
+            AnnotStruct annotStruct;
+            std::string annot_type;
+            std::string annot_color;
+            QPointF pos;
+            std::set<Annot>::const_iterator iterator = unique_annots.begin();
+            std::string color = annot->style.color.name().toStdString();
+            // check if the annot is required type
+            for (; iterator != unique_annots.end(); iterator++) {
+                if(annot->subType() == _type_map[iterator->first]
+                        && color == iterator->second){
+                    annot_type = iterator->first;
+                    annot_color = iterator->second;
+                    break;
+                }
+            }
+            if (annot_type.size()) {
+                //the annot is required
+                switch(annot->subType()) {
+                    case Poppler::Annotation::AText:
+                        break;
+                    case Poppler::Annotation::ALine:{
+                        Poppler::LineAnnotation *line_annt = dynamic_cast<Poppler::LineAnnotation*>(annot);
+                        QLinkedList<QPointF> p = line_annt->linePoints();
+                        const double resX = _dpiX * _zoom * 1;
+                        const double resY = _dpiY * _zoom * 1;
+                        QPointF a = p.takeFirst();
+                        QPointF b = p.takeLast();
+                        //			qDebug()<<"***********************"<<index;
+                        //			qDebug()<<line_annt->lineInnerColor()<<a<<b;
+                        //		    qDebug()<<popplerPage->text(QRectF(a.x(),792-a.y()-13,200,50));
+                        //		    qDebug()<<popplerPage->text(QRectF(0,0,400,500));
+                        //		    qDebug()<<resX<<resY;
+                        //		    QImage image = popplerPage->renderToImage(resX, resY);
+                        //		    image.save("line.png");
+                        break; }
+                    case Poppler::Annotation::AHighlight:{
+                         Poppler::HighlightAnnotation *hlannt = dynamic_cast<Poppler::HighlightAnnotation*>(annot);
+                         // get the right Highlight subtype
+                         Poppler::HighlightAnnotation::HighlightType sub_type = _hl_subtype_map[annot_type];
+                         // check the hightlight subtype
+                         // Highlight, Underline, or Squiggly
+                         if (hlannt->highlightType() == sub_type) {
+//                             content += "<![CDATA[ ]]>";
+                             QList<Poppler::HighlightAnnotation::Quad> quads = hlannt->highlightQuads();
+                             Poppler::HighlightAnnotation::Quad pre_annot = quads[0];
+                             // find the begining of segment
+                             float minX = 10000000; 
+                             float maxX = -10000000; 
+                             foreach(Poppler::HighlightAnnotation::Quad quad, quads)
+                                if(quad.points[0].x() < minX)
+                                    minX = quad.points[0].x();
+                                else if(quad.points[3].x() > maxX)
+                                    maxX = quad.points[3].x();
 
-	    }
-	    if (!annot_type.isEmpty()) {
-		//the annot is required
-		switch(annot->subType()) {
-		    case Poppler::Annotation::AText:
-			    break;
-		    case Poppler::Annotation::ALine:{
-			Poppler::LineAnnotation *line_annt = dynamic_cast<Poppler::LineAnnotation*>(annot);
-			QLinkedList<QPointF> p = line_annt->linePoints();
-			const double resX = _dpiX * _zoom * 1;
-			const double resY = _dpiY * _zoom * 1;
-			QPointF a = p.takeFirst();
-			QPointF b = p.takeLast();
-//			qDebug()<<"***********************"<<index;
-//			qDebug()<<line_annt->lineInnerColor()<<a<<b;
-    //		    qDebug()<<popplerPage->text(QRectF(a.x(),792-a.y()-13,200,50));
-    //		    qDebug()<<popplerPage->text(QRectF(0,0,400,500));
-    //		    qDebug()<<resX<<resY;
-    //		    QImage image = popplerPage->renderToImage(resX, resY);
-    //		    image.save("line.png");
-			break;
-			}
-		    case Poppler::Annotation::AHighlight:{
-			Poppler::HighlightAnnotation *hlannt = dynamic_cast<Poppler::HighlightAnnotation*>(annot);
-			Poppler::HighlightAnnotation::HighlightType sub_type = _hl_sub_type_map[annot_type];
-			//Highlight, Underline, or Squiggly
-			if (hlannt->highlightType() == sub_type) {
+                             // for each piece of Highlight mark
+                             foreach(Poppler::HighlightAnnotation::Quad quad, quads){
+                                 //up down
+                                 quad.points[0].setY(_page_size.height() - quad.points[0].y());
+                                 quad.points[3].setY(_page_size.height() - quad.points[3].y());
+                                 QRectF textBox(quad.points[0],quad.points[3]);
+                                 pos.rx() = quad.points[0].x();
+                                 pos.ry() = quad.points[0].y();
+                                 // deal with different piece
+                                 if(pre_annot.points[0].y() != quad.points[0].y())
+                                     if(quad.points[0].x() == minX ||
+                                         pre_annot.points[3].x() > minX + (maxX - minX)/2)
+                                         content += " ";
+                                     else
+                                         content += "\n";
+                                 else 
+                                     qDebug()<<"Warning: Find two seperate pieces in page"<<index+1<<"!";
+//                                 if(quad.points[0].x() > minX)
+//                                     qDebug()<<quad.points[0].x() - minX;
+                                 content.append(popplerPage->text(textBox).toStdString());
+                                 pre_annot = quad;
+                             }
 
-				content += "<![CDATA[";
-			    QList<Poppler::HighlightAnnotation::Quad> quads = hlannt->highlightQuads();
-			    Poppler::HighlightAnnotation::Quad pre_annot = quads[0];
-			    foreach(Poppler::HighlightAnnotation::Quad quad, quads){
-				//up down
-				quad.points[0].setY(_page_size.height() - quad.points[0].y());
-				quad.points[3].setY(_page_size.height() - quad.points[3].y());
+                         }
+                         break; }//end of AHighlight
+                    default: ;
+                }//end of subType() switch
 
-				QRectF textBox(quad.points[0],quad.points[3]);
-				
-				if(pre_annot.points[0].y() != quad.points[0].y()
-					       && abs(pre_annot.points[0].x() - quad.points[0].x()) < _page_size.width() / 2){
-				   content += "<br/>";
-				}
-				content += popplerPage->text(textBox);
-//                std::cout<<"******************************";
-//                std::cout<<popplerPage->text(textBox);
-				pre_annot = quad;
-			    }
+            }
 
-				content += "]]>";
-			}
-			break;
-		    }//end of AHighlight
-		    default:
-			    ;
-		}//end of subType() switch
+            /// @todo ff '  luan ma
+            if (content.size()) {
+                annotStruct._type = annot_type;
+                annotStruct._color = annot_color;
+                annotStruct._page = index + 1;
+                annotStruct._content = content;
+                annotStruct._x = pos.x();
+                annotStruct._y = pos.y();
+                content.clear();
+                annotStructS.push_back(annotStruct);
 
-	    }
-
-	/// @todo ff '  luan ma
-	if (!content.isEmpty()) {
-	    result += "<annot>\n";
-	    result += "<type>";
-	    result += annot_type;
-	    result += "</type>\n";
-	    result += "<color>";
-	    result += annot_color;
-	    result += "</color>\n";
-	    result += "<page>";
-	    result += QString::number(index+1);
-	    result += "</page>\n";
-	    result += "<content>";
-	    result += content;
-	    result += "</content>\n";
-	    content.clear();
-	    result += "</annot>\n" ;
-	    }
-	}// end of annots iterate loop
-	delete popplerPage;
+            }
+        }// end of annots iterate loop
+        delete popplerPage;
     }// end of page interate loop
-//
-    return result;
+    //
+    std::sort(annotStructS.begin(), annotStructS.end());
+    return annotStructS;
 }
 
 

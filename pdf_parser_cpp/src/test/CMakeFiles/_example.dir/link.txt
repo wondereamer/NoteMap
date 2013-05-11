@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC    -shared -Wl,-soname,_example.so -o _example.so CMakeFiles/_example.dir/examplePYTHON_wrap.cxx.o CMakeFiles/_example.dir/example.cpp.o 

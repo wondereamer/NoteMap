@@ -1,17 +1,38 @@
 #ifndef PDF_DOCUMENT_h
 
 #define PDF_DOCUMENT_h
-#include <QString>
 #include <poppler/qt4/poppler-qt4.h>
 #include <QImage>
 #include <set>
-#include <QStringList>
+//#include <std::stringList>
 #include <QRectF>
 #include <QSize>
 #include <cassert>
 #include <map>
 #include <vector>
 #include <string>
+
+struct AnnotStruct{
+    float _y;
+    float _x;
+    int _page;
+    bool operator < (const AnnotStruct &other) const{
+        if(_page < other._page)
+            return true;
+        else if(_page > other._page)
+            return false;
+        else if(_y < other._y)
+            return true;
+        else if(_y > other._y)
+            return false;
+        else if(_x < other._x)
+            return true;
+        else return false;
+    }
+    std::string _content;
+    std::string _color;
+    std::string _type;
+};
 //namespace IdeaNet{
 /**
  * @brief R
@@ -20,7 +41,7 @@ class Pdf_Document
 {
     /*---------------------------  lifecycle  ------------------------------------------------ */
     public:
-	typedef std::pair<QString, QString> Annot; //!<annot type and annot color 
+	typedef std::pair<std::string, std::string> Annot; //!<annot type and annot color 
 	Pdf_Document();
 	virtual ~Pdf_Document(){ } 
 
@@ -28,9 +49,9 @@ class Pdf_Document
     public:
 	QImage get_page(int page);
 	QImage reload_page( );
-	bool load_document(const QString &file);
+	bool load_document(const std::string &file);
 	std::set<Annot> get_annots_type( );
-    QString get_spec_annots(const std::set<Annot> &unique_annot);
+    std::vector<AnnotStruct> get_spec_annots(const std::set<Annot> &unique_annots);
 	int num_pages() const {
 	    assert(_doc);
 	    return _doc->numPages();
@@ -66,10 +87,13 @@ class Pdf_Document
 	int	_dpiY;
 	int	_curPage;
 	std::set<Annot> _unique_annots;
-	std::map<QString,Poppler::Annotation::SubType> _type_map;
-	std::map<QString,Poppler::HighlightAnnotation::HighlightType> _hl_sub_type_map;
+    //! map std::string to annotation type 
+	std::map<std::string,Poppler::Annotation::SubType> _type_map;
+    //! map std::string to highlight annotation subtype 
+	std::map<std::string,Poppler::HighlightAnnotation::HighlightType> _hl_subtype_map;
 	Poppler::Document *_doc;
-	qreal	_text_height;                   //!<the height of one line of text(average) 
+    //! the height of one line of text(average) 
+	qreal	_text_height;                
 	QSize	_page_size;
 
 
