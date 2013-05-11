@@ -19,8 +19,6 @@ ANNOTS_TYPE = "ANNOTS_TYPE"
 SPEC_ANNOTS = "SPEC_ANNOTS"
 GET_PAGE = "GET_PAGE"
 # ......................
-
-
 proxy =  xmlrpclib.ServerProxy("http://localhost:3344/")
 class TestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     """The test example handler."""
