@@ -12,6 +12,8 @@ extern std::string next_page();
 extern std::string get_page(const std::string &index);
 extern std::vector<AnnotStruct> get_spec_annots(const std::set<std::pair<std::string, 
                                                    std::string> > &unique_annots);
+
+
 %}
 
 %template(Annot) std::pair<std::string, std::string>;
@@ -46,3 +48,5 @@ extern std::string get_page(const std::string &index);
 extern std::set<std::pair<std::string, std::string> > get_annot_types();
 extern std::vector<AnnotStruct> get_spec_annots(const std::set<std::pair<std::string, 
                                                    std::string> > &unique_annots);
+
+

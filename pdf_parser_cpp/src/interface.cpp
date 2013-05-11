@@ -23,6 +23,7 @@
 #include <iostream>
 #include <QDir>
 #include <QString>
+#include <cmath>
 using std::string;
 typedef std::pair<std::string, std::string> Annot;
 typedef std::set<Annot> AnnotSet;

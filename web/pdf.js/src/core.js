@@ -319,7 +319,7 @@ var Page = (function PageClosure() {
           }
         }
 
-        items.push(item);
+        /*items.push(item);*/
       }
 
       return items;
@@ -480,11 +480,10 @@ var Page = (function PageClosure() {
           case 'Underline':
             var content =  annotation.get('MarkupText');
             var title =  annotation.get('T');
+            // decode the string
             item.content = stringToPDFString(content || '');
             item.title =  stringToPDFString(title || '');
-            /*if(annotation.has('T')){*/
-            /*annotation.forEach(print_annotation);*/
-            /*}*/
+            item.color = annotation.get('C')
 
             break;
           default:

@@ -1028,6 +1028,7 @@ var PDFView = {
 //#endif
   },
 
+
   // TODO(mack): This function signature should really be pdfViewOpen(url, args)
   //@@
   open: function pdfViewOpen(url, scale, password,
@@ -1054,6 +1055,40 @@ var PDFView = {
     self.loading = true;
     PDFJS.getDocument(parameters, pdfDataRangeTransport).then(
       function getDocumentCallback(pdfDocument) {
+
+    var pagesCount = pdfDocument.numPages;
+
+      var extracted_annotations = [];
+      var extracted_annotations_page = [];
+      var SUPPORTED_ANNOTS = ["Highlight", "Underline"];
+      //------------------------------------------------------------------
+     // iterate over all pages
+      for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
+        var pagePromise = pdfDocument.getPage(pageNum);
+        pagePromise.then(function(pdfPage) {
+        // iterate over annotations
+          pdfPage.getAnnotations().then(function (annos) {
+            // filter for supported annotations
+            var annots = annos.filter(function(anno) {return SUPPORTED_ANNOTS.indexOf(anno.type) >= 0;});
+            // skip page if there is nothing interesting
+            if (annots.length==0) {
+              ;
+            }
+            // handle annotations
+            for (var i=0;i<annots.length;i++) {
+              // push annotation to array
+              console.log("******************");
+              console.log(annots[i].type);
+              console.log(annots[i].content);
+              console.log(annots[i].color);
+              console.log(annots[i].rect);
+            extracted_annotations.push(annots[i]);
+            extracted_annotations_page.push(pageNum);
+            }
+          });
+        });
+      }
+        //@@ the initial point ---- load file
         self.load(pdfDocument, scale);
         self.loading = false;
       },
@@ -1353,6 +1388,10 @@ var PDFView = {
       PDFView.loadingBar.percent = percent;
     }
   },
+
+
+
+
     //@@
   load: function pdfViewLoad(pdfDocument, scale) {
     function bindOnAfterDraw(pageView, thumbnailView) {
@@ -1388,7 +1427,38 @@ var PDFView = {
       container.removeChild(container.lastChild);
     //@@
     var pagesCount = pdfDocument.numPages;
-    alert(pagesCount);
+
+      var extracted_annotations = [];
+      var extracted_annotations_page = [];
+      var SUPPORTED_ANNOTS = ["Highlight", "Underline"];
+      //------------------------------------------------------------------
+     // iterate over all pages
+      for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
+        var pagePromise = pdfDocument.getPage(pageNum);
+        pagePromise.then(function(pdfPage) {
+        // iterate over annotations
+          pdfPage.getAnnotations().then(function (annos) {
+            // filter for supported annotations
+            var annots = annos.filter(function(anno) {return SUPPORTED_ANNOTS.indexOf(anno.type) >= 0;});
+            // skip page if there is nothing interesting
+            if (annots.length==0) {
+              ;
+            }
+            // handle annotations
+            for (var i=0;i<annots.length;i++) {
+              // push annotation to array
+              console.log("******************");
+              console.log(annots[i].type);
+              console.log(annots[i].content);
+              console.log(annots[i].color);
+              console.log(annots[i].rect);
+            extracted_annotations.push(annots[i]);
+            extracted_annotations_page.push(pageNum);
+            }
+          });
+        });
+      }
+      //------------------------------------------------------------------
     var id = pdfDocument.fingerprint;
     document.getElementById('numPages').textContent =
       mozL10n.get('page_of', {pageCount: pagesCount}, 'of {{pageCount}}');
@@ -1432,37 +1502,12 @@ var PDFView = {
       var event = document.createEvent('CustomEvent');
       event.initCustomEvent('documentload', true, true, {});
       window.dispatchEvent(event);
-      var extracted_annotations = [];
-      var SUPPORTED_ANNOTS = ["Highlight", "Underline"];
-     // iterate over all pages
       for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
         var pagePromise = pdfDocument.getPage(pageNum);
         pagePromise.then(function(pdfPage) {
-        //------------------------------------------------------------------
-        // iterate over annotations
-          pdfPage.getAnnotations().then(function (annos) {
-            // filter for supported annotations
-            var annots = annos.filter(function(anno) {return SUPPORTED_ANNOTS.indexOf(anno.type) >= 0;});
-            // skip page if there is nothing interesting
-            if (annots.length==0) {
-              ;
-            }
-            // handle annotations
-            for (var i=0;i<annots.length;i++) {
-              // push annotation to array
-              console.log("******************");
-              console.log(annots[i].type);
-              console.log(annots[i].content);
-            extracted_annotations.push(annots[i]);
-            }
-          });
-        //------------------------------------------------------------------
-          //@@
           var pageNum = pdfPage.pageNumber;
           var pageView = pages[pageNum - 1];
           if (!pageView.pdfPage) {
-            // The pdfPage might already be set if we've already entered
-            // pageView.draw()
             pageView.setPdfPage(pdfPage);
           }
           var thumbnailView = thumbnails[pageNum - 1];
@@ -3120,10 +3165,13 @@ var TextLayerBuilder = function textLayerBuilder(textLayerDiv, pageIdx) {
     this.renderMatches(this.matches);
   };
 };
+//
+/*PDFView.get_annots("compressed.tracemonkey-pldi-09.pdf" ,0);*/
 
 document.addEventListener('DOMContentLoaded', function webViewerLoad(evt) {
   PDFView.initialize();
   var params = PDFView.parseQueryString(document.location.search.substring(1));
+
 
 //#if !(FIREFOX || MOZCENTRAL)
   var file = params.file || DEFAULT_URL;
@@ -3320,15 +3368,9 @@ document.addEventListener('DOMContentLoaded', function webViewerLoad(evt) {
       PDFView.rotatePages(90);
     });
 
-//#if (FIREFOX || MOZCENTRAL)
-//PDFView.setTitleUsingUrl(file);
-//PDFView.initPassiveLoading();
-//return;
-//#endif
 
-//#if !B2G
+  //@@ the begining 
   PDFView.open(file, 0);
-//#endif
 }, true);
 
 function updateViewarea() {
@@ -3745,13 +3787,3 @@ window.addEventListener('afterprint', function afterPrint(evt) {
   });
 })();
 
-//#if B2G
-//window.navigator.mozSetMessageHandler('activity', function(activity) {
-//  var url = activity.source.data.url;
-//  PDFView.open(url);
-//  var cancelButton = document.getElementById('activityClose');
-//  cancelButton.addEventListener('click', function() {
-//    activity.postResult('close');
-//  });
-//});
-//#endif
