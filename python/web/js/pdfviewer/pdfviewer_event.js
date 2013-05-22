@@ -78,12 +78,13 @@ Commands = function(){
     var head = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><root> <source>pdfviewer</source> </root>";
     this._parser = new XML_Parser();
     this._parser.parseXML(head);
+    this._retDatatype = "text";
     return this;
 };
 
 Commands.prototype._parser = "" 
 
-Commands.prototype.__get_commands = function(){
+Commands.prototype.str_commands = function(){
     return this._parser.xml_to_string();
 };
 Commands.prototype.insert_command = function (command) {
@@ -91,7 +92,7 @@ Commands.prototype.insert_command = function (command) {
     var cmdNode = this._parser.create_node("command");
     cmdNode.setAttribute("name",command._name);
     this._parser.add_node(this._parser.get_root(),cmdNode);
-    //
+    // parse arguments
     if (command._params['names'].length > 0) {
 	for (var i = 0; i < command._params['names'].length; i++) {
 	    var name = command._params['names'][i];
@@ -106,8 +107,8 @@ Commands.prototype.excute = function(callback){
     $.ajax({
 	url:'handle', //后台处理程序
 	type:'POST',         //数据发送方式
-	dataType:'xml',     //接受数据格式
-	data:this.__get_commands(),         //要传递的数据
+	dataType:this._retDatatype,     //接受数据格式
+	data:this.str_commands(),         //要传递的数据
 	success:function(data){
 	    callback(data);
 	},

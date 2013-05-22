@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cassert>
 #include <set>
+
 const int AText = 1;
 const int ALine = 2;
 const int MAX_SAMPLE = 30;                      //!< the number of annotations to estimate _text_height
@@ -297,6 +298,7 @@ std::vector<AnnotStruct> Pdf_Document::get_spec_annots(const std::set<Annot> &un
                                      qDebug()<<"Warning: Find two seperate pieces in page"<<index+1<<"!";
 //                                 if(quad.points[0].x() > minX)
 //                                     qDebug()<<quad.points[0].x() - minX;
+
                                  content.append(popplerPage->text(textBox).toStdString());
                                  pre_annot = quad;
                              }
