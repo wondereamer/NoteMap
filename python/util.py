@@ -89,3 +89,12 @@ def rgb2luv(R, G, B):
     u = 13*L*(u_ -ur_);
     v = 13*L*(v_ -vr_);
     return (int)(2.55*L + .5), (int) (u + .5), (int) (v + .5)       
+import math
+def color_distance(source, target):
+    '''docstring for rgb_distance''' 
+    luvS = rgb2luv(source[0], source[1], source[2])
+    luvT = rgb2luv(target[0], target[1], target[2])
+    return math.sqrt((luvS[0]-luvT[0])**2 + (luvS[1]-luvT[1])**2 + 
+                     (luvS[2]-luvT[2])**2)
+    
+

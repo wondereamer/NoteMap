@@ -1,7 +1,6 @@
 var extracted_annotations = new Array();
 var extracted_annotations_page = new Array();
 function get_annots(url) {
-    alert(url);
     var SUPPORTED_ANNOTS = ["Highlight", "Underline"];
     extracted_annotations = [];
     extracted_annotations_page = [];
