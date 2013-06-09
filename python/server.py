@@ -1,5 +1,6 @@
 import threading
 import webbrowser
+import subprocess
 import BaseHTTPServer
 import SimpleHTTPServer
 import pdfviewer as pdf
@@ -11,11 +12,9 @@ import mindmap
 
 #import subprocess
 from xml.etree import ElementTree
-#cpp_server = subprocess.Popen('./readPdf', cwd = './bin' )
-#cpp_server.kill()
-#time.sleep(1)
 WEB_ANNOT_FILE = 'web/annotations.html'
 PORT = 8080
+HOME = 'http://localhost:%s/' % PORT
 target_pdf = "" 
 PDF_DIRECTORY = "../" 
 # annotation types found in configure file
@@ -53,10 +52,25 @@ class AnnotStruct(object):
     def __hash__(self):
         '''docstring for __hash__''' 
         return hash((self.mtype, self.rgb))
-
+import urllib
 class WebCmdHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     """ handle command from web browser"""
     global target_pdf
+    def do_GET(self):
+        #'''docstring for do_GET''' 
+        ##length = int(self.headers.getheader('content-length'))        
+        ##str2 = self.rfile.read(length)
+        ##print str2
+        (path,fname) = util.path_fname(self.path)
+        if fname.find('.html') != -1 or fname.find('.htm') != -1:
+            self.copyfile(urllib.urlopen("." + self.path), self.wfile)
+        if path.find('.pdf') != -1:
+            page = fname
+            (path, fname) = util.path_fname(path)
+            print "Open file: %s"% fname
+            print "Page: %s"%page
+            self.wfile.write("ok")
+            subprocess.Popen(['xpdf',fname,page])
     def do_POST(self):
         # command.................
         OPEN_PDF = "OPEN_PDF"
@@ -123,14 +137,14 @@ class WebCmdHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             fname = util.path_fname(target_pdf)[1].rstrip('.pdf')
             annots2mindmap(annots, fname + ".xmind")
             # write  to ".annot" file
-            f = open(fname + ".annot" , 'w')
-            print "write to file:", fname
-            for annot in annots:
-                print >> f, "**************************************************" 
-                print >> f, annot.content
-                #print "**************************************************" 
-                #print annot.content
-                annot_types.add((annot.mtype, annot.rgb))
+            #f = open(fname + ".annot" , 'w')
+            #print "save to file:", fname + ".txt" 
+            #for annot in annots:
+                #print >> f, "**************************************************" 
+                #print >> f, annot.content
+                ##print "**************************************************" 
+                ##print annot.content
+                #annot_types.add((annot.mtype, annot.rgb))
             self.wfile.write("to browser")
             #print "************annotations types:*************" 
             #print annot_types
@@ -155,7 +169,7 @@ def open_browser( ):
     """Start a browser after waiting for half a second during which
     the web sever is started."""
     def _open_browser():
-        webbrowser.open('http://localhost:%s/%s' % (PORT, WEB_ANNOT_FILE))
+        webbrowser.open(HOME + WEB_ANNOT_FILE)
     thread = threading.Timer(0.5, _open_browser)
     thread.start()
 
@@ -244,27 +258,37 @@ def read_config(fname = "notemap.conf"):
     KEY_RGB = "key_rgb"
     global color_map
     print "***loading configure file: '%s'**********" % fname
-    for opt in cf.options(TREE_RGB):
-        temp = cf.get(TREE_RGB, opt)
-        if temp.find('#') == -1:
-            rgb = tuple(int(v) for v in re.findall("[0-9]+", temp))
-            prev_rgb = rgb
-            t = re.findall("[a-zA-Z]+",temp)[0]
-            tr_rgbs.append((t,rgb))
-        elif temp.find('#') != -1:
-            color_map[prev_rgb] = temp
+    try:
+        count = 0
+        for opt in cf.options(TREE_RGB):
+            # code...
+            temp = cf.get(TREE_RGB, opt)
+            if temp.find('#') == -1:
+                rgb = tuple(int(v) for v in re.findall("[0-9]+", temp))
+                prev_rgb = rgb
+                t = re.findall("[a-zA-Z]+",temp)[0]
+                tr_rgbs.append((t,rgb))
+            elif temp.find('#') != -1:
+                color_map[prev_rgb] = temp
+                color_map[count] = temp
+                count += 1
+    except Exception, e:
+        print e
 
-        #print opt,":", (t,rgb)
-    for opt in cf.options(KEY_RGB):
-        temp = cf.get(KEY_RGB, opt)
-        if temp.find('#') == -1:
-            rgb = tuple(int(v) for v in re.findall("[0-9]+", temp))
-            prev_rgb = rgb
-            t = re.findall("[a-zA-Z]+",temp)[0]
-            key_rgbs.append((t,rgb))
-        elif temp.find('#') != -1:
-            color_map[prev_rgb] = temp
-        #print opt,":", (t,rgb)
+    try:
+        for opt in cf.options(KEY_RGB):
+            temp = cf.get(KEY_RGB, opt)
+            if temp.find('#') == -1:
+                rgb = tuple(int(v) for v in re.findall("[0-9]+", temp))
+                prev_rgb = rgb
+                t = re.findall("[a-zA-Z]+",temp)[0]
+                key_rgbs.append((t,rgb))
+            elif temp.find('#') != -1:
+                color_map[prev_rgb] = temp
+            #print opt,":", (t,rgb)
+
+    except Exception, e:
+        print e
 
     print "tr_rgbs:" 
     pprint(tr_rgbs)
@@ -272,12 +296,14 @@ def read_config(fname = "notemap.conf"):
     pprint(key_rgbs)
     print "color_map:" 
     pprint(color_map)
-    assert len(color_map) > 0 and len(tr_rgbs) > 0 and len(key_rgbs) > 0
+    #assert len(color_map) > 0 and len(tr_rgbs) > 0 and len(key_rgbs) > 0
     print "***************************************" 
 
 def is_parent_level(a, b):
     '''return the level of annotation in the mindmap,
        the root has the smallest level
+       a: annot
+       b: annot
     ''' 
     def level(arg):
         '''docstring for level''' 
@@ -290,7 +316,8 @@ def is_parent_level(a, b):
         
 
 def annots2mindmap( annots, fname, root = ""):
-    '''save pdf annotations list to xmind file''' 
+    '''save pdf annotations list to xmind file
+    ''' 
     if root:
         root_name = root
     else:
@@ -306,42 +333,93 @@ def annots2mindmap( annots, fname, root = ""):
         annot_type = (annot.mtype, annot.rgb)
         style = mmap.create_topic_style(fill = color_map[annot.rgb])
         if not stack:
-            h = mmap.add_subtopic(mmap.root, format_content(annot.content.decode('utf-8')), style)
+            h = mmap.add_subtopic(mmap.root, format_content(annot.content.decode('utf-8')),
+                                  style, link = HOME + fname.rstrip(".xmind")+".pdf/"+ str(annot.page))
             if annot_type in tr_rgbs:
                 stack.append((h, annot_type))
         else:
             for i,v in reversed(list(enumerate(stack))):
                 if is_parent_level(v[1], annot_type):
-                    h = mmap.add_subtopic(v[0], format_content(annot.content.decode('utf-8')), style)
+                    h = mmap.add_subtopic(v[0], format_content(annot.content.decode('utf-8')),
+                                          style, link = HOME + fname.rstrip(".xmind")+".pdf/"+ str(annot.page))
                     if annot_type in tr_rgbs:
                         stack.append((h, annot_type))
                     break
                 elif annot_type in tr_rgbs:
                     stack.pop()
                     if not stack:
-                        h = mmap.add_subtopic(mmap.root, format_content(annot.content.decode('utf-8')), style)
+                        h = mmap.add_subtopic(mmap.root, format_content(annot.content.decode('utf-8')),
+                                              style, link = HOME + fname.rstrip(".xmind")+".pdf/"+ str(annot.page))
                         stack.append((h, annot_type))
                         break
     mmap.save(fname)
     mindmap2txt(mmap, fname.rstrip(".xmind") + ".txt")
     return mmap
 
-def mindmap2txt(mmap, fname):
 
+def str2mindmap( annots_txt, fname, ENCODE = "utf-8"):
+    '''save pdf annotations list to xmind file''' 
+    uni_lines = []
+    for annot in annots_txt:
+        uni_lines.append(annot.decode(ENCODE))
+    uni_lines.append(u'\t*end')
+    mmap = mindmap.MindMap(annots_txt[0].rstrip(u'\n').lstrip(u'*'))
+    stack = []
+    global color_map
+    assert len(color_map) > 0
+    temp = []
+    for annot in uni_lines[1:]:
+        if annot.lstrip(u'\t').startswith('*'):
+            # get the topic content
+            if len(temp) == 0:
+                temp.append(annot)
+                continue 
+            level = len(temp[0]) - len(temp[0].lstrip(u'\t'))
+            str_annot = temp[0].lstrip(u'\t*')
+            for l in temp[1:]:
+                str_annot += l.lstrip(u'\t')
+            temp = []
+            temp.append(annot)
+            try:
+                style = mmap.create_topic_style(fill = color_map[level])
+            except KeyError:
+                style = mmap.create_topic_style(fill = "#ffffff" )
+            if not stack:
+                h = mmap.add_subtopic(mmap.root, format_content(str_annot), style)
+                stack.append((h,level))
+            else:
+                for i,v in reversed(list(enumerate(stack))):
+                    if v[1] < level:
+                        h = mmap.add_subtopic(v[0], format_content(str_annot), style)
+                        stack.append((h, level))
+                        break
+                    else:
+                        stack.pop()
+                        if not stack:
+                            h = mmap.add_subtopic(mmap.root, format_content(str_annot), style)
+                            stack.append((h, level))
+                            break
+
+        else:
+            temp.append(annot)
+    mmap.save(fname)
+    mindmap2txt(mmap, "t.txt")
+    return mmap
+def mindmap2txt(mmap, fname):
+    STEP = 1
+    MARK = "\t" 
     def visit_element(topic, level, f):
         '''docstring for visit_element''' 
-        STEP = 2
-        MARK = "*" 
-        print topic.get_title()
-        print >> f, MARK*level*STEP + \
-                 format_content(topic.get_title()).encode('utf-8').replace('\n', '\n'+' '*level*STEP )
+        print >> f, MARK*level*STEP + '*' + \
+                 format_content(topic.get_title()).encode('utf-8').replace('\n', '\n'+ MARK*level*STEP+' ')
         for t in topic.get_subtopics():
            visit_element(t, level+1, f) 
         
 
     f = open(fname, "w")
-
-    visit_element(mmap.root,0, f)
+    print >> f, format_content(mmap.root.get_title()).encode('utf-8')
+    for t in mmap.root.get_subtopics():
+       visit_element(t, 0, f) 
 
 def format_content(content, LENGTH = 50, TOLERATION = 5):
     '''docstring for format_content''' 
@@ -376,3 +454,4 @@ if __name__ == "__main__":
     print color_map
     #load_test_pdf("test.pdf")
     pdf_from_web(args.f)
+    #str2mindmap(open(args.f,"r").readlines(), "t.xmind" )
