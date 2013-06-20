@@ -166,8 +166,7 @@ class WebCmdHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 
 def open_browser( ):
-    """Start a browser after waiting for half a second during which
-    the web sever is started."""
+    """Start a browser after waiting for the web sever to be started."""
     def _open_browser():
         webbrowser.open(HOME + WEB_ANNOT_FILE)
     thread = threading.Timer(0.5, _open_browser)

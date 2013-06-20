@@ -203,6 +203,7 @@ class TestHandlerBase(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = urlparse(self.path)
+        print url.path
 
         # Ignore query string
         path, _ = urllib.unquote_plus(url.path), url.query

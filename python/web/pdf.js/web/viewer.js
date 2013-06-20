@@ -3450,10 +3450,13 @@ window.addEventListener('hashchange', function webViewerHashchange(evt) {
 });
 
 window.addEventListener('change', function webViewerChange(evt) {
+  //@@a
+  alert("II");
   var files = evt.target.files;
   if (!files || files.length === 0)
     return;
 
+  alert("II");
   // Read the local file into a Uint8Array.
   var fileReader = new FileReader();
   fileReader.onload = function webViewerChangeFileReaderOnload(evt) {
@@ -3461,8 +3464,8 @@ window.addEventListener('change', function webViewerChange(evt) {
     var uint8Array = new Uint8Array(buffer);
     PDFView.open(uint8Array, 0);
   };
-
   var file = files[0];
+    alert(file.name);
   fileReader.readAsArrayBuffer(file);
   PDFView.setTitleUsingUrl(file.name);
 
@@ -3526,6 +3529,7 @@ window.addEventListener('scalechange', function scalechange(evt) {
 }, true);
 
 window.addEventListener('pagechange', function pagechange(evt) {
+  //@@b
   var page = evt.pageNumber;
   if (PDFView.previousPageNumber !== page) {
     document.getElementById('pageNumber').value = page;
@@ -3786,4 +3790,30 @@ window.addEventListener('afterprint', function afterPrint(evt) {
     PDFView.animationStartedPromise.resolve();
   });
 })();
+function my_open(page_num) {
+  var page = page_num;
+  if (PDFView.previousPageNumber !== page) {
+    document.getElementById('pageNumber').value = page;
+    var selected = document.querySelector('.thumbnail.selected');
+    if (selected)
+      selected.classList.remove('selected');
+    var thumbnail = document.getElementById('thumbnailContainer' + page);
+    thumbnail.classList.add('selected');
+    var visibleThumbs = PDFView.getVisibleThumbs();
+    var numVisibleThumbs = visibleThumbs.views.length;
+    // If the thumbnail isn't currently visible scroll it into view.
+    if (numVisibleThumbs > 0) {
+      var first = visibleThumbs.first.id;
+      // Account for only one thumbnail being visible.
+      var last = numVisibleThumbs > 1 ?
+                  visibleThumbs.last.id : first;
+      if (page <= first || page >= last)
+        scrollIntoView(thumbnail);
+    }
 
+  }
+  document.getElementById('previous').disabled = (page <= 1);
+  document.getElementById('next').disabled = (page >= PDFView.pages.length);
+}//end of my_open
+
+  PDFView.open(DEFAULT_URL, 0);
