@@ -1,5 +1,7 @@
 var extracted_annotations = new Array();
 var extracted_annotations_page = new Array();
+
+alert("OOO");
 function get_annots(url) {
     var SUPPORTED_ANNOTS = ["Highlight", "Underline"];
     extracted_annotations = [];
@@ -84,6 +86,7 @@ function get_pdf_filename() {
     return pdfName;
 }//end of get_pdf_filename
 var fname = get_pdf_filename();
+alert(fname);
 get_annots(fname);
 /*setTimeout("get_annots(fname)", 1000 );*/
 setTimeout("send_annots_to_server( )", 2000 );

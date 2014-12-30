@@ -295,7 +295,7 @@ std::vector<AnnotStruct> Pdf_Document::get_spec_annots(const std::set<Annot> &un
                                      else
                                          content += "\n";
                                  else 
-                                     qDebug()<<"Warning: Find two seperate pieces in page"<<index+1<<"!";
+                                     qDebug()<<"Warning: Find two seperate pieces in Line"<<index+1<<"!";
 //                                 if(quad.points[0].x() > minX)
 //                                     qDebug()<<quad.points[0].x() - minX;
 

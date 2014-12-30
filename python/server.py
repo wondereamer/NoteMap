@@ -3,7 +3,7 @@ import webbrowser
 import subprocess
 import BaseHTTPServer
 import SimpleHTTPServer
-import pdfviewer as pdf
+#import pdfviewer as pdf
 import ConfigParser 
 import webcolors
 import re
@@ -62,7 +62,7 @@ class WebCmdHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         ##str2 = self.rfile.read(length)
         ##print str2
         (path,fname) = util.path_fname(self.path)
-        if fname.find('.html') != -1 or fname.find('.htm') != -1:
+        if fname.find('.html') != -1 or fname.find('.htm') != -1 or fname.find(".js") != -1:
             self.copyfile(urllib.urlopen("." + self.path), self.wfile)
         if path.find('.pdf') != -1:
             page = fname
@@ -92,14 +92,14 @@ class WebCmdHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         if cmd == OPEN_PDF:
            filename = xml_cmd.find("filename").text
            print "receive < OPEN_PDF > command with argument: " + filename
-           pdf.open_file(filename)
+           #pdf.open_file(filename)
         elif cmd == PREVIOUS:
             print "receive < PREVIOUS > command"
         elif cmd == NEXT:
             print "receive < NEXT > command"
         elif cmd == ANNOTS_TYPE:
             print "receive < ANNOTS_TYPE >"
-            print pdf.get_annot_types()
+            #print pdf.get_annot_types()
         elif cmd == SPEC_ANNOTS:
             print "receive <SPEC_ANNOTS> command with arguments:" + xml_cmd.find("spec_annots").text
         elif cmd == GET_PAGE:
@@ -332,40 +332,58 @@ def annots2mindmap( annots, fname, root = ""):
         annot_type = (annot.mtype, annot.rgb)
         style = mmap.create_topic_style(fill = color_map[annot.rgb])
         if not stack:
-            h = mmap.add_subtopic(mmap.root, format_content(annot.content.decode('utf-8')),
-                                  style, link = HOME + fname.rstrip(".xmind")+".pdf/"+ str(annot.page))
+            h = mmap.add_subtopic(mmap.root,
+                                   format_content(util.my_decode(annot.content), style, 
+                                   link = HOME + fname.rstrip(".xmind")+".pdf/"+
+                                   str(annot.page)))
             if annot_type in tr_rgbs:
                 stack.append((h, annot_type))
         else:
             for i,v in reversed(list(enumerate(stack))):
                 if is_parent_level(v[1], annot_type):
-                    h = mmap.add_subtopic(v[0], format_content(annot.content.decode('utf-8')),
-                                          style, link = HOME + fname.rstrip(".xmind")+".pdf/"+ str(annot.page))
+                    h = mmap.add_subtopic(v[0],
+                        format_content(util.my_decode(annot.content), style, 
+                                      link = HOME +
+                                      fname.rstrip(".xmind")+".pdf/"+
+                                      str(annot.page)))
                     if annot_type in tr_rgbs:
                         stack.append((h, annot_type))
                     break
                 elif annot_type in tr_rgbs:
                     stack.pop()
                     if not stack:
-                        h = mmap.add_subtopic(mmap.root, format_content(annot.content.decode('utf-8')),
-                                              style, link = HOME + fname.rstrip(".xmind")+".pdf/"+ str(annot.page))
+                        h = mmap.add_subtopic(mmap.root,
+                            format_content(util.my_decode(annot.content),
+                                              style, link = HOME +
+                                              fname.rstrip(".xmind")+".pdf/"+
+                                              str(annot.page)))
                         stack.append((h, annot_type))
                         break
     mmap.save(fname)
     mindmap2txt(mmap, fname.rstrip(".xmind") + ".txt")
     return mmap
+def parse_args(suffix):
+    '''docstring for parse_args''' 
+    suffix = suffix.rstrip(" \n")
+    if suffix.find("#") != -1:
+        color = "#ff0000"
+        page = suffix.split("#")[0]
+    else:
+        color = None
+        page = suffix
+    return (color, page)
 
 
 def str2mindmap( annots_txt, fname, ENCODE = "utf-8"):
     '''save pdf annotations list to xmind file''' 
     uni_lines = []
     for annot in annots_txt:
-        uni_lines.append(annot.decode(ENCODE))
+        uni_lines.append(util.my_decode(annot))
     uni_lines.append(u'\t*end')
     mmap = mindmap.MindMap(annots_txt[0].rstrip(u'\n').lstrip(u'*'))
     stack = []
     global color_map
-    assert len(color_map) > 0
+    # assert len(color_map) > 0
     temp = []
     for annot in uni_lines[1:]:
         if annot.lstrip(u'\t').startswith('*'):
@@ -375,34 +393,44 @@ def str2mindmap( annots_txt, fname, ENCODE = "utf-8"):
                 continue 
             level = len(temp[0]) - len(temp[0].lstrip(u'\t'))
             str_annot = temp[0].lstrip(u'\t*')
+            item = str_annot.rsplit(u'**')
+            str_annot = item[0]
+            # parse  arguments
+            color = None
+            page = "" 
+            if len(item) > 1:
+                (color, page) = parse_args(item[1])
             for l in temp[1:]:
                 str_annot += l.lstrip(u'\t')
             temp = []
             temp.append(annot)
             try:
-                style = mmap.create_topic_style(fill = color_map[level])
+                style = mmap.create_topic_style(fill = color if color else color_map[level])
             except KeyError:
                 style = mmap.create_topic_style(fill = "#ffffff" )
             if not stack:
-                h = mmap.add_subtopic(mmap.root, format_content(str_annot), style)
+                h = mmap.add_subtopic(mmap.root, format_content(str_annot),
+                        style, link = None if len(item) <= 1 else HOME+fname.rstrip(".xmind")+".pdf/"+page)
                 stack.append((h,level))
             else:
                 for i,v in reversed(list(enumerate(stack))):
                     if v[1] < level:
-                        h = mmap.add_subtopic(v[0], format_content(str_annot), style)
+                        h = mmap.add_subtopic(v[0], format_content(str_annot),
+                                style, link = None if page == ""  else HOME+fname.rstrip(".xmind")+".pdf/"+page)
                         stack.append((h, level))
                         break
                     else:
                         stack.pop()
                         if not stack:
-                            h = mmap.add_subtopic(mmap.root, format_content(str_annot), style)
+                            h = mmap.add_subtopic(mmap.root, format_content(str_annot),
+                                    style, link = None if page == ""  else HOME+fname.rstrip(".xmind")+".pdf/"+page)
                             stack.append((h, level))
                             break
 
         else:
             temp.append(annot)
     mmap.save(fname)
-    mindmap2txt(mmap, "t.txt")
+    #mindmap2txt(mmap, "t.txt")
     return mmap
 def mindmap2txt(mmap, fname):
     STEP = 1
@@ -452,5 +480,8 @@ if __name__ == "__main__":
     read_config("notemap.conf")
     print color_map
     #load_test_pdf("test.pdf")
-    pdf_from_web(args.f)
-    #str2mindmap(open(args.f,"r").readlines(), "t.xmind" )
+    #pdf_from_web(args.f)
+    str2mindmap(open(args.f,"r").readlines(), "%s.xmind" % args.f.split(".")[0])
+# mekk.xmind
+# chardet
+# webcolors

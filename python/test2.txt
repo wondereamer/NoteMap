@@ -1,0 +1,286 @@
+test2
+*BarBarBarBar 数据
+	*BarBarBarBar 数据系统函数
+		*TradeBlazer 公式提供了一种处理机制：回溯。即对数据的向前引用，比如，获取上一个Bar
+		 的收盘价：Close[1]，获取10 天前的成交量：Vol[10]。
+			*对于Bool值，我们将False 作为其无效值。
+			*TradeBlazer 公式时，可能出现数据不存在的情况，可通过系统函数HistoryDataExi
+			 st 进行判断，如果该函数返回True，即为Bar 数据有效。
+	*叠加数据
+		*假定，我们新建一个超级图表模块，其主数据对应的商品为：cu0503，在此基础上，我们叠加了cu0504
+		 和cu0505。此时，根据叠加操作的先后顺序，cu0503 为Data0，cu0504 为Data1
+		 ，cu0505 为Data2，在TradeBlazer 公式中，我们可以通过Data1.Close(
+		 )，Data2.Vol()类似方法调用叠加Bar 数据，叠加Bar 数据的函数和Bar 数据一样，只
+		 是需要在调用的时候加上数据源。
+	*行情数据
+		*行情数据只在最后Bar 是有意义的，其他Bar 会返回无效值。因此，在调用行情数据函数时，为了提高效
+		 率，最好按照以下方法：
+		 If(BarStatus()==2)
+		 {
+		 }
+		 //调用行情数据函数
+		 行情数据函数都按照以下格式命名Q_XXXXX，比如Q_Close，Q_BidPrice。在调用行情数
+		 据的时候，需要判断当前行情数据是否有效，系统提供函数QuoteDataExist 来对有效性进行判断
+		 。如果行情数据已经准备好，返回True,否则，返回False。
+	*属性数据
+		*除了以上的各项数据之外，TradeBlazer 公式还提供一组重要的属性数据，反映了该商品的一些基本
+		 信息，比如当前数据周期，买卖盘个数、保证金设置等信息。
+*附录
+	*数据类型
+	*命名规则
+		*�不区分大小写；
+		 �不能超过32 个英文字符；
+		 �每一类公式不能出现相同的名称；
+		 �公式名称不能出现字母、数字、下划线以外的其他字符；�公式名称不能和系统保留字，系统函数等重名。
+	*运算符
+		*算术运算符
+		 关系运算符
+		 逻辑运算符
+		 括号
+		 + - * / %^
+		 > >= < <= == <>
+		 AND/&& OR/|| NOT/！(){} []
+	*功能关键字
+		*ParamsParamsParamsParams
+		 VarsVarsVarsVars
+		 IfIfIfIf
+		 ElseElseElseElse
+		 BeginBeginBeginBegin
+		 EndEndEndEnd
+		 ForForForFor
+		 ToToToTo
+		 DownToDownToDownToDownTo
+		 WhileWhileWhileWhile
+		 BreakBreakBreakBreak
+		 ContinueContinueContinueContinue
+		 TrueTrueTrueTrue
+		 FalseFalseFalseFalse
+		 用该关键字宣告参数定义的起始，参数必须填写默认值。
+		 用该关键字宣告变量定义的起始(可以赋初值), 变量不填写初值时,系统将自动为其填充初值。
+		 条件语句。
+		 条件语句。
+		 用该关键字宣告程序主体的起始。
+		 用该关键字宣告程序主体的结束。
+		 循环语句。
+		 循环语句。
+		 循环语句。
+		 循环语句。
+		 循环语句。
+		 循环语句。
+		 真。
+		 假。
+	*数据源
+	*数据输出
+		*ieldBoolFieldBoolFieldBoolFieldBool
+		 FieldNumericFieldNumericFieldNumericFieldNumeric
+		 FieldStringFieldStringFieldStringFieldString
+		 用户字段的布尔型返回数据。用户字段的数值型返回数据。用户字段的字符串返回数据。
+		*PlotBoolPlotBoolPlotBoolPlotBool
+		 PlotNumericPlotNumericPlotNumericPlotNumeric
+		 PlotStringPlotStringPlotStringPlotString
+		 PlotBarPlotBarPlotBarPlotBar
+		 UnPlotUnPlotUnPlotUnPlot
+		 AlertAlertAlertAlert
+		 BuyBuyBuyBuy
+		 SellSellSellSell
+		 ............
+		 输出布尔型值。
+		 输出数值型值。
+		 输出字符串值。
+		 画K 线型态。
+		 取消指定位置的输出。报警输出。
+		 买入操作。
+		 卖出操作。
+		 其他系统函数。
+			*////
+			 %%%%
+			 ^^^^
+			 除
+			 求模求幂
+			*对于A/B 这样的一个表达式，因为不知道B 是否为0，所以总是需要对其进行有效性验证，计算的速度会受
+			 到一定的影响，因此，对于除法表达式，我们强烈建议使用时尽可能转换为乘法处理，即提高执行速度，也可以避
+			 免未知的错误发生。
+			*"This
+			 is
+			 expression
+			 A"+"
+			 and
+			 this
+			 is
+			 expression
+			 B.";
+			*"abcd"
+			 <
+			 "zyxw";
+			*逻辑操作符的优先级低于数学操作符和关系操作符。逻辑操作符也遵循先括号的原则，如果没有括号，那么其运算
+			 顺序也是从左边到右边。
+			*但是只要当Con1 为False时，就不再需要判断Con2 的值，而是直接返回False。
+			*//这是一个注释语句；
+			 /*这是一个多行注释的
+			 语句;
+			 */
+			*TradeBlazer 公式在处理的时候自动将Numeric 和Long 进行转化，用户无需进行特别的处理
+			*TradeBlazer 公式现有的系统函数主要分为：数据函数、时间函数、数学函数、其它函数、交易函数
+			 、属性函数、账户函数、颜色函数、字符串函数等。
+			*Vars
+			 NumericSeries
+			 Begin
+			 If
+			 {
+			 (
+			 Open
+			 >
+			 Counter
+			 ...
+			 }
+			 ...
+			 End
+			 Counter(0);
+			 High[1])
+			 =
+			 Counter[1]
+			 +
+			 1;
+			*If(High
+			 >
+			 High[1]
+			 AND
+			 Low
+			 <
+			 Low[1])
+			 PlotNumeric("Outside
+			 Alert("Outside
+			 Bar");
+			 Bar",High);
+			*If
+			 {
+			 (Condition1)
+			 TradeBlazer 公式语句1;}Else
+			 {
+			 If(Condition2)
+			 TradeBlazer 公式语句2;}Else
+			 {
+			 }
+			 TradeBlazer 公式语句3;
+			*Vars
+			 Numeric
+			 Numeric
+			 Begin
+			 for
+			 {
+			 }
+			 End
+			 i
+			 =
+			 SumValue(0);
+			 i;
+			 0
+			 to
+			 Length
+			 -
+			 1
+			 SumValue
+			 =
+			 SumValue
+			 +
+			 Price[i];Return
+			 SumValue;
+			*For 循环变量 = 初始值 DownTo 结束值{
+			 }
+			 TradeBlazer 公式语句;
+			*While
+			 {
+			 }
+			 (Condition)
+			 TradeBlazer 公式语句;
+			*我们可以在循环之中添加Break 语句，
+			*ContinueContinueContinueContinue
+			*用户函数的参数类型可以包含TradeBlazer 公式的九种类型，而其他五类公式只能使用三种简单的基本类型。
+			*引用参数是在调用的时候传入一个变量的地址，
+			*Params
+			 Numeric
+			 Numeric
+			 Numeric
+			 MyVal1;
+			 MyVal2(0);MyVal3(0);
+			*TradeBlazer 公式使用关键字"Vars"来进行变量宣告，
+			*对于序列变量，TradeBlazer 公式在内部针对其回溯的特性作了很多的特殊处理，也需要为序列变量
+			 保存相应的历史数据，因此，和简单变量相比，执行的速度和占用内存空间方面都作了一些牺牲
+			*当nOffset>CurrentBar 或者nOffset<0 时，对于变量的回溯都将越界，这种情况
+			 下，将返回无效值。
+			*系统函数中回溯的使用主要是针对Bar 数据
+			*无参数和使用默认参数的情况下，函数调用的括号可以省略。例如:Close[2]等同于Close()[2]。
+			*用户函数的回溯和系统函数原理基本一致，但考虑到系统的执行速度和效率等因素，目前，TradeBlazer
+			 公式不支持对用户函数的回溯，如果您想要获取用户函数的回溯值，建议您将函数返回值赋值给一个序列变量，通
+			 过对序列变量的回溯来达到相同的目的。
+*用户函数
+	*用户函数返回一个值，这个值可以是Numeric，Bool，String 三种类型中的任何一种。
+	*用户函数通过参数传递输入数据，通过引用参数或返回值传递输出数据
+	*用户函数在交易开拓者中使用有如下规则：
+	*支持九种类型的参数定义，支持指定参数默认值；
+	 �支持使用引用参数，可通过引用参数返回多个数据；
+	 �支持六种类型的变量定义，支持指定变量的默认值；
+	 �可以访问Data0-Data49 个数据源的Bar 数据；
+	 �可以访问行情数据、属性数据；
+	 �必须通过Return 返回数据，返回数据类型为三种基本类型之一；�脚本中的返回数据类型必须和属性界
+	 面设置中一致；
+	 �用户函数之间可以相互调用，用户函数自身也可以递归调用；
+	 �用户函数可以根据设置调用部分的系统函数
+	*按照用户函数属性不同，用户函数可以分为内建用户函数和其他用户函数两种，内建用户函数是交易开拓者提供的
+	 ，用于支持公式系统运行的预置公式，您可以查看和调用内建用户函数，但是不能删除和修改内建公式。
+	*函数参数声明类型
+	 可传入的变量类型
+	*以上的用户函数通过默认参数调用Fun1 的意思不是调用Fun1(1)，而是将Ind1 调用Fun1 
+	 的Close 传递下
+	*用户字段
+		*用户字段不像其他公式，它只需要最后一个Bar 的输出数据，而不是所有Bar 的输出数据。
+			*我们对用户字段的使用规则归纳如下：
+			*支持三种基本类型的参数定义，支持指定参数默认值；
+			*�不支持使用引用参数；
+			*必须通过FieldNumeric、FieldBool、FieldString 返回数据，返回数据类型
+			 为三种基本类型的组合；
+			*�可以支持Alert 来进行报警；
+			*在一个用户字段中，不能出现两个不同的输出值名称
+	*技术指标
+		*支持三种基本类型的参数定义，支持指定参数默认值；
+		*不支持使用引用参数；
+		*�必须通过PlotNumeric、PlotBool、PlotString 返回数据，返回数据类型为三
+		 种基本类型的组合；
+		*可以输出多组数据，通过PlotNumeric、PlotBool、PlotString 的第一个参数，
+		 即输出名称来区分输出数据；
+		*可以支持Alert 来进行报警；
+		*技术指标在输出数据时，我们是通过输出值的名称来进行识别，名称相同则认为是一个数据，如下的代码，后面语
+		 句的输出数据将会覆盖前面语句的输出数据。
+		 PlotNumeric("Test",10);
+		 PlotNumeric("Test",20);
+		*您可以设置其输出值的颜色、风格和粗细，如图所示：
+	*K 线型态
+		*�支持三种基本类型的参数定义，支持指定参数默认值；
+		*�不支持使用引用参数；
+		*�必须通过PlotBar 返回数据；
+		*�只能输出一组数据，用名称进行区分；
+		*�可以支持Alert 来进行报警；
+		*您可以设置其输出值的表现形式，以及颜色、风格和粗细，如图所示：
+	*特征走势
+		*�支持三种基本类型的参数定义，支持指定参数默认值；
+		*�不支持使用引用参数；
+		*�必须通过PlotNumeric、PlotBool、PlotString 返回数据，返回数据类型为三
+		 种基本类型的组合；
+		*�只能输出一组数据，用名称进行区分；
+		*可以支持Alert 来进行报警；
+	*交易指令
+		*支持三种基本类型的参数定义，支持指定参数默认值；
+		*�不支持使用引用参数
+		*�通过Buy、Sell、SellShort 和BuyToCover 产生交易动作，也可以使用各种内建
+		 平仓指令产生交易动作；
+		*默认情况下，4 个交易函数产生的委托单即时发送；
+		*因此一段时间内（<5 分钟）A 商品最后一个Bar 的数据的收盘价，最高价，最低价以及成交量等数据，
+		 会随着Tick的变化和累计而产生相应的变化。
+		*当交易函数的延迟设置为False。将会实时发送产生的委托单，按Tick 进行更新。在使用该参数时，需
+		 要确认自己所编写的公式不会用到这些无效的中间数据，从而影响交易结果。
+	*内建平仓指令
+		*TradeBlazer 公式提供了额外的八种平仓函数，通过合理的应用内建平仓函数，可以帮助您有效的锁
+		 定风险并及时获利。
+		*从图表的第一个Bar到最后一个Bar，全部执行完成之后，整个交易策略执行完毕
+		*在整个执行过程产生的所有交易委托被保存下来供超级图表模块显示或进行性能测试分析。
+		*当交易策略应用在超级图表中时，您可以设置交易策略开平仓的显示风格以及颜色、线条等， 使之显示在超级图表中
