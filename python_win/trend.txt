@@ -1,0 +1,131 @@
+#Red
+**风险
+	**the standard deviation of the annual returns。
+**市场风险
+	**避免方法：
+		**1）尽量远离市场。最好有多个出场点。当波动率低，价格不
+                在活跃的时候离开。
+		  2）A deleveraged program may return only 20% but is 10 times more likely to 
+		     survive a price shock, a much better long-term alternative. A small 
+                reduction in returns for a larger reduction in exposure is a good trade-off.
+	**Money seeks a safer place during times of extreme uncertainty, and this is seen as stock prices drop on widespread selling and bond prices rise on widespread buying
+**概念
+	**net return
+	**net price change**1090
+	**The Efficient Frontier**1050
+	**无风险收益---利率
+	**年化波动率**1060
+	**贝塔--当前组合相对与benchmark的波动率。
+**要点**#red
+	**And measuring risk as a 10% chance of losing 20% of your
+	  equity is not as sobering as actually losing 20%。
+	**Without leverage, many futures prices show less risk than stocks。
+**想法**
+	**分控调整头寸，从而影响策略表现。如果根据策略的特点去选择风控，那么风控的目
+标就变了。因此，不同的风控目标可选不同的策略，从这个角度上，策略的好坏不能以简单的回
+测结果做标准。所以策略买卖才会有意义。**1073
+	**一般加减仓的范围是确定的，那么从整体来看，它的风险范围是可估计的，那么叠加的策略集合仍可以被看作一个策略。根据波动率调整仓位，特征是风险的稳定性，也就是这个组合策略的风险特征。
+	**基于策略的止损比基于风控的止损更合理。每个步骤都可以从风控和策略两方面去考
+虑，显然基于策略的更合理，但是可能伤及风控。如何折中？
+	**实际上是三个相同入口的策略叠加。代表对入口点的高度认可，或者说加大了策略效用中入口的权重。是一个策略组合。
+	**策略叠加意味着对它比其它策略有信心，但可能牺牲总体的稳定性。
+	**市场选择时候可用多周期平均？
+**概率计算线索**1057
+**风险偏爱**1049
+**通常的资金管理方法（不涉及数学）**1052#red
+**流动性**1053#red
+	**1）The fast market is the result of developing news or an economic report where everyone has the same interpretation of the direction that prices should move. In futures this may be combined with a supply/demand imbalance or a perceived imbalance. Once a large number of buy orders flood the market, specialists, market makers, and locals all stand aside (or widen the bid-asked spread and offer very small quantity) rather than be run over
+2）In the inactive market, a large premium must be paid to attract another trader to take the opposite side
+	**买卖代价估算**1053
+**回报和风险衡量指标**1054
+	**1)Larger profits rather than smaller profits because it leaves more room for execution error.
+	2)A shorter time-to-recovery rather than prolonged drawdowns.
+	3)Less time in the market because it avoids price shocks.
+	4）避免大起大落的盈利曲线。
+	**夏普率，Information Ratio(不考虑利率收益的夏普率)
+	  回报/收益年化波动--年化波动中有周期
+	  缺点：无法区别连续的亏损和间歇性的亏损。无法察觉大额的收益和损失。
+	  月周期总比日周期好，因为它相当于平滑过了。
+	**Sortino Ratio只考虑单边回撤波动的夏普率。
+	**平均回撤**1057
+		**Measuring only the drawdowns is a concept similar to semivariance and is valuable because the distribution of profitable returns compared to losing returns is not sym- metric; therefore, the standard deviation does not express it correctly and may bias the results in favor of profitable days, giving you an understated picture of risk.
+	**Calmar Ratio(年化收益和单笔最大回撤比）
+	**UIcer Index(当前收益和最高历史收益间的差距带来的焦虑)**1059
+**目标风险下的杠杠计算**1048
+**交易系统**
+	**仓位调整
+		**等资金，等年化波动，等ATR
+		**adjusting the position size to target the same risk on 
+each trade gives each trade an equal chance to participate in the 
+results. Unless you can select which trades are most likely to be 
+better than another, equal risk is the most conservative approach. 
+Reducing the position size when the market gets more volatility also 
+prevents the volatility of returns from varying wildly.
+	**内在的初始风险
+		**Each trading style has its own intrinsic risk associated with initial entries. The trend philosophy is known for its
+ tenacity, entering a long position whenever prices turn up, taking a small loss if prices then turn down, and reentering the next time 
+they turn up. The breakout technique will limit losses to the size of the current trading range and any attempt to reduce this loss, 
+which can be large in a volatile market, conflicts with the essence of the method. Mean reversion systems must take large losses in 
+exchange for a high percentage of smaller, profitable trades
+	**止损
+		**Using random numbers, the number of times reached multiplied by the size of the stop will always be constant. Then a stop must be better than a random event to be a good trading rule.
+		**On some level, it makes sense to scale your losses to 
+the amount of money at risk, but stops are more sensible if they 
+relate to the nature of the system, the timing of the trade, the 
+market volatility, or a chart pattern
+		**So stops work as you planned most of the time, except when you need them most.
+		**有些跟踪止损只往前不往后，有些双向。
+		**波动止损
+			**placed below the highest high of the current price move.
+			**however, when volatility increases, today’s stop 
+may move farther away than on the previous day. ISAM has suggested 
+that a generic stop is 12 × average true range。止损的连贯性。
+		**Standard Deviation Stop**1076#red
+		**An alternative is to reduce the size of your positions as volatility increases.**#red
+		**This concept of equalized risk (and perhaps reward) across all markets is very popular; 
+however, it is not sensitive to individual markets, and as with many stops, it imposes artificial overrides. 
+If the volatility of one market increases or decreases faster than others, then this risk level would need to 
+be adjusted to individual mar- kets; otherwise, it could be reached on every trade or not reached at all.
+	**止盈
+		**Profit targets are essential in short-term trading, 
+where the price noise makes it likely that any favorable move will 
+reverse soon. They are more difficult to incorporate into a longer-
+term trend-following system because they risk miss- ing the bigger 
+profit (from the fat tail) in exchange for smaller but more frequent 
+profits. As a trend-follower, once you take profits but the trend 
+direction is still intact, you need to find a way to reenter that 
+trade to avoid missing the rare, but very large price move.
+		**While any profit target assumes that prices will not continue in the same direction,
+		**Once the profit target has been hit, the system waits for the next trend trade. It cannot reenter the same trend
+		**多个出场价格。并非是分步减仓，而是当某个风险条件触发的时候，
+		  在出场价格上保持灵活。
+		**If volatility causes a sharp drop followed by a recovery, then hitting a stop captures the worst exit. On the other hand, 
+if volatility gives you a windfall profit, then exiting that position will be a good move.if they are triggered by intraday price 
+movesYou would want to exit at the time of the intraday spike rather than waiting for the end of day.
+	**滑点
+		**in fast markets, you are lucky if your stop is executed near your price. Often it gets filled 
+		  at the extreme of the move, where all the buyers and sellers cluster.
+		**When many stop orders cluster around the same point, there is proximity risk. One way this 
+can be seen is in a gap as price breaks through a key resistance level. Given the large number of trend-
+following systems, it would not be surprising to find that many of them are generating the same orders on the 
+close, especially following a very volatile price move.（下单价格要灵活）
+**止损的难点及波动解决方式**1079
+	**市场选择
+		**几种方法**1082#red
+		**ADX的使用方法**1086
+		**CSI=ADX加保证金和佣金元素。**1086
+		**市场效率**1090
+		**Emerging markets have less noise and more trend because there are fewer participants and 
+those that are active seem to have the same view of the direction of the market, or the lack of liquidity 
+drives prices further in one direction than would be seen in a highly liquid market（控盘股）**#red
+		**The interest rates tend to have strong trends based on the way monetary policy is 
+implemented, and the short maturities track the government rates more closely than the long maturities, which 
+include a greater degree of speculation about future policy.市场因数的叠加。
+		** it was shown that index markets have greater noise than other sectors, and the grains have 
+less long-term direction because of seasonality and their response to changes in the U.S. dollar.
+	**毁灭的概率（无交易资金）**1092
+		**relative size of trading profits and losses, the frequency of the losses, and the se- quence in which they occur, combine to form an equity profile. 
+		**1）赌博-等盈亏
+		  2）When using profit goals, the point at which trading would stop if the goal was achieved, 
+		     the chance of ruin should decrease as the goal becomes closer
+		  3）盈亏不同。

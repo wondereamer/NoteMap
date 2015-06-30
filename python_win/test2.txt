@@ -1,0 +1,89 @@
+#RED
+**进场的三种方式
+	**Buy the entire amount at the time of the signal.
+	**Average into the position (or some weighted average).
+		**When averaging into a trade, if the trend changes direction 
+before the full position is set, then the loss on the trade will be less than 
+if you had entered all contracts on day 1. On the other hand, if prices were 
+to move steadily higher after a new long signal, then the average entry price 
+will be worse than day 1
+		**每隔固定的天数间隔加仓，总仓位在初始阶段是确定的。
+		**噪音越到，效果越好。
+		**The total time to enter should be proportional to the speed of 
+the trend or the average holding period of the trade
+		**很难套用于反向系统。
+		**there seems to be an overall improvement in trend-following 
+results.
+	**Wait for a better price
+		**We see that waiting, even for a minimum move pullback after 
+the initial signal, re- sults in a significant improvement in performance。
+		**To avoid the worst-case scenario of missing the biggest 
+profit, we can enter at the close if no op- portunity has occurred within 5 
+days。
+		**cut the number of trades by about 40% in all three markets. 
+This shows that there are many trend trades that lasted only a few days, and, 
+because of waiting for a better price, the trend turned back in the previous 
+direction, and the false signal was not taken.没有进场说明回调打破了原来的信号，
+可能不仅仅是价格回调。
+		**Using Timing for a Better Price。Long positions will be entered 
+after the initial signal, or at the time of the initial signal, if the RSI is 
+below a threshold level set at 30. a maximum window will be used to avoid 
+missing a trade. The RSI will be 8 days rather than the default 14 days in 
+order to find more opportunities within the window.
+	**加仓
+		**几种加仓图。**1101
+		**Adding equal amounts on new high profits with a minimum number 
+of days separating the entries
+		**Adding half the previous size with the same conditions as 
+above。
+		**Adding equal amounts on new losses with a minimum number of 
+days between entries.
+			**成功率不高，可能和股票的健壮性有关，底子好的股票跌幅有限。
+		**benchmark**#red
+	**资金趋势交易
+		**Increasing position size as equity increases during a trending 
+period always results in being fully invested at the top of the cycle, when 
+losses begin. Losses will be on a larger base than profits, and equity will 
+drop much faster than it increased。
+		**A sustained losing streak may cause a speculator to reduce the 
+investment in proportion to dwindling capital. If this happens, the result 
+will be entering into a profitable period with a smaller investment than the 
+prior losing period
+		**his method would perform poorly on a diversified portfolio, 
+which should have shorter periods of negative movement。you should first find 
+out if the returns are positively autocorrelated, meaning that there is 
+persistence in either positive or negative returns. You must also consider 
+that applying this to hypothetical equity patterns is not likely to work 
+because hypothetical results are always better than actual trading results。
+		**三种不同的现金管理方式。**1105
+	**最优投资
+		**The objective is to maximize the amount invested (put at risk) 
+yet avoid the possibility of a loss greater than some target amount。For an 
+initial investment, optimal f is simply the maximum part of that portfolio 
+that can safely be traded without any significant risk of ruin。
+		**For those investors who withdraw profits as they occur and 
+continue to trade based on the same assumed initial investment, nothing need 
+be changed unless exceptionally high risk requires a decrease in the amount of 
+leverage。
+		**复原功式： gain=1/(1-loss) - 1
+50% loss requires a 100% gain to restore the original value
+		**if you invest less than the optimal amount, then your risk 
+decreases arithmetically, but your profits decrease geometrically, which is 
+another bad scenario.
+		**The drawdown during a trade could be much larger than the 
+final outcome of that trade. Then there is more risk than can be seen using 
+only the final trader result.杆杆再调整，更接近实际**1111
+		**一个应用例子**1111
+	**过滤原因：在最大窗口内，如果确认信号没有发出，并且发生了反转。
+**期望与实际的对比
+	**评估5次交易中4次亏损的概率。**1113
+	**在实际取得20%成功率下，取得30%预期成功率的概率多大。
+（high significant=容易取得预期。）
+		**低样本下的计算调整。
+	
+
+**A full discussion of risk of ruin can be found in Ralph Vince, The Handbook 
+of Portfolio Mathematics (Hoboken, NJ: John Wiley & Sons, 2007), Chapter 12.
+**Ralph Vince, Portfolio Management Formulas 
+**团队特有的专业术语，可能不知道，让大家了解你。
+**方法模板，图表模板。**1103
